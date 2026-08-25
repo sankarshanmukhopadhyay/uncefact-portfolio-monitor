@@ -1,50 +1,90 @@
 # UN/CEFACT Portfolio Monitor
 
-Evidence-driven monitoring of the UN/CEFACT open-source portfolio: repository health, specification dependencies, cross-project change impact, semantic alignment, and portfolio assurance.
+Evidence-driven monitoring of the UN/CEFACT open-source portfolio: live project discovery, cross-project change impact, explicit dependency context, policy-matched findings, lifecycle history, and portfolio reporting.
+
+**Published monitor:** https://sankarshanmukhopadhyay.github.io/uncefact-portfolio-monitor/
+
+## v1.0 operating model
+
+```text
+UN/CEFACT GitLab discovery
+        ↓
+retained observation comparison
+        ↓
+observed structural change
+        ↓
+declared internal relationships
+        ↓
+direct review obligations
+        ↓
+declared evidence policies
+        ↓
+policy-matched findings
+        ↓
+persistent active/resolved lifecycle
+        ↓
+weekly portfolio assurance report
+```
+
+Declared external standards dependencies are published alongside this chain as review context. v1.0 does not claim automated external-change detection.
 
 ## Design principles
 
 1. **Evidence before scores.** Findings must point to inspectable evidence.
-2. **Portfolio coherence over activity volume.** A green repository can still create a cross-project risk.
-3. **Declarative relationships.** Portfolio membership and dependencies live in configuration, not hard-coded Python.
+2. **Portfolio coherence over activity volume.** A green repository can still create a cross-project review obligation.
+3. **Declarations remain declarations.** Relationships, finding policies, and external dependencies are reviewed governance inputs, not inferred facts.
 4. **Provider neutrality.** CI, repository inspection, specification checks, RAHP, and future analyzers may contribute evidence; none is the universal source of truth.
-5. **Human review for material inference.** The monitor identifies review obligations; it does not silently convert change into trust conclusions.
+5. **Human review for material inference.** The monitor does not silently convert change into incompatibility or trust conclusions.
+6. **History is retained.** Findings can resolve without disappearing from the evidence lifecycle.
 
-## Current capability
+## Evidence contract
 
-`v0.2.x` adds dynamic discovery of the public UN/CEFACT GitLab portfolio under `un/unece/uncefact`.
+The stable v1 evidence layers and invariants are defined in [docs/EVIDENCE-CONTRACT.md](docs/EVIDENCE-CONTRACT.md).
 
-Run locally:
+The core machine-readable outputs are:
 
-```bash
-python scripts/discover_portfolio.py
-```
+- `portfolio.json` — discovered portfolio inventory;
+- `changes.json` — structural/activity comparison with the previous observation;
+- `relationships.json` — declared internal portfolio relationships;
+- `impacts.json` — direct review obligations;
+- `findings.json` — policy-matched current findings;
+- `findings-lifecycle.json` — retained active/resolved lifecycle;
+- `external-dependencies.json` — declared external standards/protocol context;
+- `weekly-report.md` — evidence-linked human-readable portfolio report.
 
-The collector:
+A finding is a policy-matched evidence condition requiring tracked disposition. It is **not automatically an incompatibility conclusion, assurance failure, or trust decision**.
 
-- reads the namespace from `config/portfolio.toml`;
-- follows GitLab pagination;
-- includes subgroups;
-- normalizes evidence-relevant project metadata;
-- writes stable JSON to `reports/latest/portfolio.json`.
+## Operator guide
 
-GitHub Actions also runs the scan weekly and on demand, retaining the resulting snapshot as an artifact for later inspection and comparison.
+See [docs/OPERATIONS.md](docs/OPERATIONS.md) for the complete run sequence, interpretation order, failure handling, release operation, and v1 limitations.
 
-## Development flow
+The scheduled workflow runs weekly and is also manually dispatchable. A local run requires Python 3.11+.
+
+## Development and release flow
 
 Substantive work follows:
 
 `Issue → branch → pull request → CI → merge → release manifest → GitHub Actions release`
 
-The repository's first README commit was the only bootstrap exception required to make branch/PR development possible.
+Release manifests are validated by CI. The release workflow creates tags and GitHub Releases after a valid new manifest reaches `main`.
 
-## Release codenames
+## v1.0 limitations and extension points
 
-Each release receives a randomly selected codename from the direct pages in Wikipedia's `Category:Tributaries of the Ganges`. The selected name is recorded in the release manifest, making the outcome auditable even though selection is random.
+v1.0 intentionally does **not** automatically score repository health, poll external standards for semantic changes, infer normative compatibility, perform recursive multi-hop impact propagation, or make relying-party trust decisions.
 
-- **v0.1.0 — Tamsa**: foundation, governance, CI, and release automation.
-- **v0.2.0 — Ghaghara**: dynamic GitLab portfolio discovery and scan artifacts.
+Future evidence providers may add role-aware repository checks, semantic/schema drift analysis, external-source change polling, and additional specification pressure tests, but they must preserve the v1 evidence boundaries.
 
-## Roadmap
+## Release history
 
-Next milestones add change detection, repository-health evidence, explicit cross-project relationships, impact propagation, and portfolio findings. The monitor will remain evidence-driven and will not treat any single assurance provider as the portfolio-wide source of truth.
+- **v0.1.0 — Tamsa** — foundation, CI, release automation.
+- **v0.2.0 — Ghaghara** — dynamic GitLab portfolio discovery.
+- **v0.3.0 — Varuna** — published GitHub Pages portfolio.
+- **v0.4.0 — Kosi** — retained baseline and change detection.
+- **v0.5.0 — Ramganga** — declared internal relationship graph.
+- **v0.6.0 — Gandaki** — direct dependency-aware review obligations.
+- **v0.7.0 — Gomti** — deterministic evidence-policy findings.
+- **v0.8.0 — Nandakini** — declared external standards dependency inventory.
+- **v0.9.0 — Yamuna** — findings lifecycle and weekly report.
+- **v1.0.0 — Alaknanda** — stable evidence contract and operational release baseline.
+
+Release codenames are randomly selected from the configured pool derived from Wikipedia's `Category:Tributaries of the Ganges` and are permanently recorded in release manifests.

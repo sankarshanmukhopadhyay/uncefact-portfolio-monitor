@@ -1,0 +1,5 @@
+version: v0.2.0
+codename: Ghaghara
+status: release
+summary: Dynamic UN/CEFACT GitLab portfolio discovery with normalized snapshots and scheduled scan artifacts.
+source: https://en.wikipedia.org/wiki/Category:Tributaries_of_the_Ganges

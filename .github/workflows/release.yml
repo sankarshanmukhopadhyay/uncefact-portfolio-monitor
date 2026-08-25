@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'releases/v*.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate and publish newly merged release manifests
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BEFORE: ${{ github.event.before }}
+          AFTER: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifests=$(git diff --name-only "$BEFORE" "$AFTER" -- 'releases/v*.yaml')
+          if [ -z "$manifests" ]; then
+            echo "No release manifests changed."
+            exit 0
+          fi
+
+          while IFS= read -r manifest; do
+            [ -n "$manifest" ] || continue
+            output=$(python scripts/release_from_manifest.py "$manifest")
+            version=$(printf '%s\n' "$output" | sed -n 's/^version=//p')
+            codename=$(printf '%s\n' "$output" | sed -n 's/^codename=//p')
+            summary=$(printf '%s\n' "$output" | sed -n 's/^summary=//p')
+
+            if git rev-parse "$version" >/dev/null 2>&1; then
+              echo "$version already exists; skipping."
+              continue
+            fi
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$version" -m "$version — $codename"
+            git push origin "$version"
+            gh release create "$version" \
+              --title "$version — $codename" \
+              --notes "$summary" \
+              --verify-tag
+          done <<< "$manifests"

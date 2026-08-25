@@ -1,0 +1,31 @@
+schema_version = "1"
+
+[[relationships]]
+from = "un/unece/uncefact/spec-unttp"
+to = "un/unece/uncefact/spec-untp"
+type = "profile-of"
+note = "UNTP Textiles is an industry extension of core UNTP."
+
+[[relationships]]
+from = "un/unece/uncefact/spec-uncrmtp"
+to = "un/unece/uncefact/spec-untp"
+type = "profile-of"
+note = "Critical Raw Materials/CETM is an extension of core UNTP."
+
+[[relationships]]
+from = "un/unece/uncefact/untp-agrifood"
+to = "un/unece/uncefact/spec-untp"
+type = "profile-of"
+note = "UNTP Agrifood is an industry extension of core UNTP."
+
+[[relationships]]
+from = "un/unece/uncefact/spec-untp"
+to = "un/unece/uncefact/gtr"
+type = "trust-infrastructure-dependency"
+note = "UNTP Digital Identity Anchor work is coordinated with GRID/GTR trust infrastructure."
+
+[[relationships]]
+from = "un/unece/uncefact/spec-unvtd"
+to = "un/unece/uncefact/gtr"
+type = "related-to"
+note = "UN Verifiable Trade Documents references trust registry integration while remaining architecturally independent."

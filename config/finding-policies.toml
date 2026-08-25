@@ -1,0 +1,17 @@
+schema_version = "1"
+
+[[policies]]
+id = "UCF-PF-001"
+title = "Trust infrastructure dependency changed"
+severity = "high"
+relationship_types = ["trust-infrastructure-dependency"]
+change_types = ["added", "removed", "changed"]
+description = "A project with a declared trust-infrastructure dependency requires tracked disposition after structural change in that dependency."
+
+[[policies]]
+id = "UCF-PF-002"
+title = "Declared specification dependency changed"
+severity = "medium"
+relationship_types = ["depends-on", "profile-of", "semantic-dependency"]
+change_types = ["added", "removed", "changed"]
+description = "A project with a declared specification, profile, or semantic dependency requires tracked disposition after structural change in that dependency."

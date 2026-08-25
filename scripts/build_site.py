@@ -20,7 +20,7 @@ def fmt_date(value: str | None) -> str:
         return value
 
 
-def render(snapshot: dict) -> str:
+def render(snapshot: dict, changes: dict | None = None) -> str:
     projects = snapshot.get("projects", [])
     generated_at = snapshot.get("generated_at", "unknown")
     source = snapshot.get("source", {})
@@ -42,6 +42,15 @@ def render(snapshot: dict) -> str:
 <td>{escape(topics or '—')}</td>
 </tr>''')
 
+    change_html = ""
+    change_stat = ""
+    if changes:
+        summary = changes.get("summary", {})
+        total_structural = int(summary.get("added", 0)) + int(summary.get("removed", 0)) + int(summary.get("changed", 0))
+        baseline = changes.get("baseline", "unknown")
+        change_stat = f'''<div class="stat"><span>Structural changes</span><strong>{total_structural}</strong><small>Since previous observation</small></div>'''
+        change_html = f'''<div class="note"><strong>Latest observed change:</strong> {summary.get('added',0)} added, {summary.get('removed',0)} removed, {summary.get('changed',0)} metadata-changed, {summary.get('activity_advanced',0)} with activity advancement. Baseline: {escape(str(baseline))}. <a href="changes.json">Inspect changes.json</a>.</div>'''
+
     return f'''<!doctype html>
 <html lang="en">
 <head>
@@ -53,23 +62,25 @@ def render(snapshot: dict) -> str:
 @media(prefers-color-scheme:dark){{:root{{--bg:#101318;--panel:#171b21;--text:#f4f6f8;--muted:#a9b2bd;--line:#303640;--accent:#84adff}}}}
 *{{box-sizing:border-box}} body{{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}} a{{color:var(--accent);text-decoration:none}} a:hover{{text-decoration:underline}}
 main{{max-width:1240px;margin:auto;padding:40px 24px 72px}} h1{{font-size:34px;margin:0 0 8px}} .lede{{color:var(--muted);max-width:800px;margin:0 0 28px}}
-.stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:24px 0}} .stat{{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}} .stat strong{{display:block;font-size:25px}}
+.stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:24px 0}} .stat{{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}} .stat strong{{display:block;font-size:25px}} .stat small{{display:block;color:var(--muted);margin-top:3px}}
 .controls{{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0}} input,select{{font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--text)}} input{{min-width:min(100%,360px);flex:1}}
 .table-wrap{{overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}} table{{width:100%;border-collapse:collapse;min-width:900px}} th,td{{text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:top}} th{{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}} tr:last-child td{{border-bottom:0}} .path{{font-size:12px;color:var(--muted);margin-top:3px}} footer{{color:var(--muted);font-size:13px;margin-top:28px}} code{{font-size:12px}} .note{{border-left:3px solid var(--accent);padding:10px 14px;background:var(--panel);margin:24px 0}}
 </style>
 </head>
 <body><main>
 <h1>UN/CEFACT Portfolio Monitor</h1>
-<p class="lede">Live discovery of public projects in the UN/CEFACT GitLab namespace. This page reports observable repository metadata only; it does not yet assign health, impact, or assurance conclusions.</p>
+<p class="lede">Live discovery of public projects in the UN/CEFACT GitLab namespace. This page reports observable repository metadata and changes only; it does not assign health, impact, or assurance conclusions.</p>
 <div class="stats">
 <div class="stat"><span>Discovered projects</span><strong>{len(projects)}</strong></div>
 <div class="stat"><span>Source</span><strong>GitLab</strong><small>{escape(source.get('group',''))}</small></div>
 <div class="stat"><span>Observed</span><strong>{escape(fmt_date(generated_at))}</strong><small>UTC snapshot</small></div>
+{change_stat}
 </div>
 <div class="note">The exact normalized evidence used to generate this view is available as <a href="portfolio.json">portfolio.json</a>.</div>
+{change_html}
 <div class="controls"><input id="q" type="search" placeholder="Search projects, paths, descriptions or topics…" aria-label="Search portfolio"><select id="state"><option value="all">All states</option><option value="active">Active</option><option value="archived">Archived</option></select></div>
 <div class="table-wrap"><table><thead><tr><th>Project</th><th>Default branch</th><th>State</th><th>Last activity</th><th>Topics</th></tr></thead><tbody id="rows">{''.join(rows)}</tbody></table></div>
-<footer>Generated from <code>{escape(source.get('base_url',''))}/{escape(source.get('group',''))}</code> at {escape(generated_at)}. Portfolio inventory is observational evidence, not an assurance score.</footer>
+<footer>Generated from <code>{escape(source.get('base_url',''))}/{escape(source.get('group',''))}</code> at {escape(generated_at)}. Portfolio inventory and change data are observational evidence, not assurance scores.</footer>
 </main>
 <script>
 const q=document.getElementById('q'), state=document.getElementById('state');
@@ -79,14 +90,18 @@ q.addEventListener('input',filter);state.addEventListener('change',filter);
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Build the static portfolio site from a normalized snapshot")
+    parser = argparse.ArgumentParser(description="Build the static portfolio site from normalized evidence")
     parser.add_argument("--input", type=Path, default=ROOT / "reports" / "latest" / "portfolio.json")
+    parser.add_argument("--changes", type=Path, default=ROOT / "reports" / "latest" / "changes.json")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "site")
     args = parser.parse_args()
     snapshot = json.loads(args.input.read_text(encoding="utf-8"))
+    changes = json.loads(args.changes.read_text(encoding="utf-8")) if args.changes.exists() else None
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    (args.output_dir / "index.html").write_text(render(snapshot), encoding="utf-8")
+    (args.output_dir / "index.html").write_text(render(snapshot, changes), encoding="utf-8")
     (args.output_dir / "portfolio.json").write_text(json.dumps(snapshot, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if changes:
+        (args.output_dir / "changes.json").write_text(json.dumps(changes, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(f"built site with {snapshot.get('project_count', len(snapshot.get('projects', [])))} projects -> {args.output_dir}")
     return 0
 

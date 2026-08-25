@@ -1,0 +1,10 @@
+[source]
+provider = "gitlab"
+base_url = "https://opensource.unicc.org"
+group = "un/unece/uncefact"
+include_subgroups = true
+archived = false
+visibility = "public"
+
+[output]
+path = "reports/latest/portfolio.json"

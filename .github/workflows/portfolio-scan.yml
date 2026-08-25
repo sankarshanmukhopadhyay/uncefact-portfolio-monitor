@@ -1,0 +1,26 @@
+name: Portfolio scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Discover UN/CEFACT projects
+        run: python scripts/discover_portfolio.py
+      - name: Upload portfolio snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: uncefact-portfolio-snapshot
+          path: reports/latest/portfolio.json
+          retention-days: 30

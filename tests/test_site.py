@@ -29,7 +29,7 @@ class SiteTests(unittest.TestCase):
         self.assertIn("Example", html)
         self.assertIn("un/unece/uncefact/example", html)
         self.assertIn("portfolio.json", html)
-        self.assertIn("observational evidence", html.lower())
+        self.assertIn("not an aggregate assurance score", html.lower())
 
 
 if __name__ == "__main__":

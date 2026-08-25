@@ -36,8 +36,9 @@ def validate(root: Path = ROOT) -> list[str]:
             errors.append(f"missing required v1 path: {rel}")
 
     pyproject = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
-    if pyproject.get("project", {}).get("version") != "1.0.0":
-        errors.append("pyproject version must be 1.0.0 for v1 readiness")
+    version = str(pyproject.get("project", {}).get("version", ""))
+    if not version.startswith("1."):
+        errors.append("pyproject version must remain on the stable 1.x line for v1 readiness")
 
     readme = (root / "README.md").read_text(encoding="utf-8")
     for phrase in ("Evidence contract", "Operator guide", "v1.0"):
@@ -45,7 +46,7 @@ def validate(root: Path = ROOT) -> list[str]:
             errors.append(f"README missing v1 navigation phrase: {phrase}")
 
     scan = (root / ".github/workflows/portfolio-scan.yml").read_text(encoding="utf-8")
-    for script in ("build_findings.py", "build_external_dependencies.py", "build_lifecycle_report.py"):
+    for script in ("build_findings.py", "build_external_dependencies.py", "build_lifecycle_report.py", "build_site.py"):
         if script not in scan:
             errors.append(f"portfolio workflow does not invoke {script}")
 

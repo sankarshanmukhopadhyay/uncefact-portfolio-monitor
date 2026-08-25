@@ -1,0 +1,5 @@
+version: v0.5.0
+codename: Ramganga
+status: release
+summary: Explicit validated and provenance-aware UN/CEFACT portfolio relationship graph published as machine-readable evidence and Pages views.
+source: https://en.wikipedia.org/wiki/Category:Tributaries_of_the_Ganges

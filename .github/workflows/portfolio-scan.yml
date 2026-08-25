@@ -43,6 +43,8 @@ jobs:
         run: python scripts/build_impacts.py
       - name: Evaluate evidence policies and publish findings
         run: python scripts/build_findings.py
+      - name: Validate and publish external dependencies
+        run: python scripts/build_external_dependencies.py
       - name: Advance baseline
         run: |
           mkdir -p .state
@@ -63,6 +65,7 @@ jobs:
             site/relationships.mmd
             site/impacts.json
             site/findings.json
+            site/external-dependencies.json
           retention-days: 30
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

@@ -1,0 +1,25 @@
+schema_version = "1"
+
+[[dependencies]]
+id = "w3c-did-resolution"
+name = "W3C DID Resolution 1.0"
+url = "https://www.w3.org/TR/did-resolution/"
+type = "technical-resolution-dependency"
+affected_projects = ["un/unece/uncefact/gtr", "un/unece/uncefact/spec-untp"]
+note = "DID resolution is technical identifier-control evidence and must remain distinct from registrar authority evidence."
+
+[[dependencies]]
+id = "w3c-recognized-entities"
+name = "W3C Verifiable Credentials Recognized Entities"
+url = "https://w3c.github.io/vc-recognized-entities/"
+type = "trust-model-dependency"
+affected_projects = ["un/unece/uncefact/gtr", "un/unece/uncefact/spec-untp"]
+note = "Recognized-entity work may affect registrar-recognition and Digital Identity Anchor trust semantics."
+
+[[dependencies]]
+id = "toip-trqp"
+name = "Trust Registry Query Protocol"
+url = "https://github.com/trustoverip/tswg-trust-registry-protocol"
+type = "protocol-alignment"
+affected_projects = ["un/unece/uncefact/gtr"]
+note = "GRID/GTR may profile or align with TRQP for registry-query and lifecycle semantics without making governance obligations protocol-dependent."

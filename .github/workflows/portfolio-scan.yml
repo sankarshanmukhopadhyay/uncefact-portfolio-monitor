@@ -35,8 +35,6 @@ jobs:
         run: python scripts/discover_portfolio.py
       - name: Compare with previous observation
         run: python scripts/compare_snapshots.py
-      - name: Build portfolio site
-        run: python scripts/build_site.py
       - name: Validate and publish relationships
         run: python scripts/build_relationships.py
       - name: Derive portfolio review obligations
@@ -47,6 +45,8 @@ jobs:
         run: python scripts/build_external_dependencies.py
       - name: Update findings lifecycle and weekly report
         run: python scripts/build_lifecycle_report.py
+      - name: Build portfolio assurance dashboard
+        run: python scripts/build_site.py
       - name: Advance persistent state
         run: |
           mkdir -p .state

@@ -24,10 +24,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Restore previous portfolio baseline
+      - name: Restore previous portfolio state
         uses: actions/cache/restore@v4
         with:
-          path: .state/portfolio.json
+          path: .state
           key: portfolio-baseline-${{ github.run_id }}
           restore-keys: |
             portfolio-baseline-
@@ -45,14 +45,17 @@ jobs:
         run: python scripts/build_findings.py
       - name: Validate and publish external dependencies
         run: python scripts/build_external_dependencies.py
-      - name: Advance baseline
+      - name: Update findings lifecycle and weekly report
+        run: python scripts/build_lifecycle_report.py
+      - name: Advance persistent state
         run: |
           mkdir -p .state
           cp reports/latest/portfolio.json .state/portfolio.json
-      - name: Save current portfolio baseline
+          cp site/findings-lifecycle.json .state/findings-lifecycle.json
+      - name: Save current portfolio state
         uses: actions/cache/save@v4
         with:
-          path: .state/portfolio.json
+          path: .state
           key: portfolio-baseline-${{ github.run_id }}
       - name: Upload portfolio evidence
         uses: actions/upload-artifact@v4
@@ -65,7 +68,9 @@ jobs:
             site/relationships.mmd
             site/impacts.json
             site/findings.json
+            site/findings-lifecycle.json
             site/external-dependencies.json
+            site/weekly-report.md
           retention-days: 30
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

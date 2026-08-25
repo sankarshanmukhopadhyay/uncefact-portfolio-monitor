@@ -23,3 +23,5 @@ jobs:
           for manifest in releases/v*.yaml; do
             python scripts/release_from_manifest.py "$manifest"
           done
+      - name: Validate v1 release readiness
+        run: python scripts/release_readiness.py

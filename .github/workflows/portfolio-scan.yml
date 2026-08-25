@@ -24,15 +24,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Restore previous portfolio baseline
+        uses: actions/cache/restore@v4
+        with:
+          path: .state/portfolio.json
+          key: portfolio-baseline-${{ github.run_id }}
+          restore-keys: |
+            portfolio-baseline-
       - name: Discover UN/CEFACT projects
         run: python scripts/discover_portfolio.py
+      - name: Compare with previous observation
+        run: python scripts/compare_snapshots.py
       - name: Build portfolio site
         run: python scripts/build_site.py
-      - name: Upload portfolio snapshot
+      - name: Advance baseline
+        run: |
+          mkdir -p .state
+          cp reports/latest/portfolio.json .state/portfolio.json
+      - name: Save current portfolio baseline
+        uses: actions/cache/save@v4
+        with:
+          path: .state/portfolio.json
+          key: portfolio-baseline-${{ github.run_id }}
+      - name: Upload portfolio evidence
         uses: actions/upload-artifact@v4
         with:
-          name: uncefact-portfolio-snapshot
-          path: reports/latest/portfolio.json
+          name: uncefact-portfolio-evidence
+          path: |
+            reports/latest/portfolio.json
+            reports/latest/changes.json
           retention-days: 30
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

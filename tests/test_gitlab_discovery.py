@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import unittest
+from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -25,7 +26,8 @@ class GitLabDiscoveryTests(unittest.TestCase):
 
         def requester(url):
             calls.append(url)
-            if "page=1" in url:
+            page = parse_qs(urlparse(url).query)["page"][0]
+            if page == "1":
                 return ([{"id": 2, "name": "B", "path_with_namespace": "un/unece/uncefact/b"}], "2")
             return ([{"id": 1, "name": "A", "path_with_namespace": "un/unece/uncefact/a"}], "")
 

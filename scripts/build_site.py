@@ -24,7 +24,11 @@ def _read(path: Path, default: dict) -> dict:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
 
 
-def render(snapshot: dict, changes: dict, impacts: dict, lifecycle: dict, external: dict) -> str:
+def render(snapshot: dict, changes: dict | None = None, impacts: dict | None = None, lifecycle: dict | None = None, external: dict | None = None) -> str:
+    changes = changes or {"summary": {}}
+    impacts = impacts or {"summary": {}}
+    lifecycle = lifecycle or {"summary": {}}
+    external = external or {"dependency_count": 0}
     projects = snapshot.get("projects", [])
     generated_at = snapshot.get("generated_at", "unknown")
     source = snapshot.get("source", {})

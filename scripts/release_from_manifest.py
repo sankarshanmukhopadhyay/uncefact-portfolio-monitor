@@ -7,6 +7,8 @@ from pathlib import Path
 import re
 import sys
 
+import release_codenames
+
 ROOT = Path(__file__).resolve().parents[1]
 POOL = ROOT / "config" / "release-codenames.txt"
 VERSION_RE = re.compile(r"^v\d+\.\d+\.\d+$")
@@ -26,6 +28,7 @@ def parse_manifest(path: Path) -> dict[str, str]:
 
 
 def validate(path: Path) -> dict[str, str]:
+    release_codenames.validate()
     data = parse_manifest(path)
     version = data.get("version", "")
     codename = data.get("codename", "")
@@ -34,7 +37,7 @@ def validate(path: Path) -> dict[str, str]:
     expected = f"{version}.yaml"
     if path.name != expected:
         raise ValueError(f"manifest filename must be {expected}")
-    pool = {line.strip() for line in POOL.read_text(encoding="utf-8").splitlines() if line.strip()}
+    pool = {line.strip() for line in POOL.read_text(encoding="utf-8").splitlines() if line.strip() and not line.lstrip().startswith("#")}
     if codename not in pool:
         raise ValueError(f"codename {codename!r} is not in configured tributary pool")
     if data.get("status") != "release":
@@ -49,7 +52,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         data = validate(args.manifest)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, release_codenames.PolicyError) as exc:
         print(f"release manifest error: {exc}", file=sys.stderr)
         return 2
 

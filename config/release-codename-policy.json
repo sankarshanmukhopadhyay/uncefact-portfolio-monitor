@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "minimumPoolSize": 20,
+  "pool": "config/release-codenames.txt",
+  "source": {
+    "name": "Tributaries of the Ganges",
+    "url": "https://en.wikipedia.org/wiki/Category:Tributaries_of_the_Ganges",
+    "reviewed": "2026-08-30",
+    "selectionBasis": "Repository-maintained reviewed tributary-name pool"
+  },
+  "identity": {
+    "authoritative": "semantic version/tag",
+    "codenameRole": "human-readable release metadata",
+    "persistenceSurface": "releases/vX.Y.Z.yaml"
+  },
+  "selection": {
+    "preferUnused": true,
+    "allowReuseAfterExhaustion": false,
+    "persistBeforeAcceptance": true,
+    "liveSourceFetchAtRelease": false
+  }
+}

@@ -24,9 +24,13 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("Review obligations</span><strong>3", html)
         self.assertIn("Active findings</span><strong>4", html)
         self.assertIn("External dependencies</span><strong>6", html)
-        for href in ["changes.json", "relationships.html", "impacts.html", "findings.html", "external-dependencies.html", "weekly-report.html"]:
+        for href in ["changes.html", "relationships.html", "impacts.html", "findings.html", "external-dependencies.html", "weekly-report.html"]:
             self.assertIn(f'href="{href}"', html)
         self.assertIn("not an aggregate assurance score", html)
+        self.assertIn("Current observation", html)
+        self.assertIn("Direct review queue", html)
+        self.assertIn("How to read this monitor", html)
+        self.assertNotIn("prefers-color-scheme:dark", html)
 
 
 if __name__ == "__main__":

@@ -33,7 +33,6 @@ def render(data: dict, mermaid: str) -> str:
 <title>UN/CEFACT Portfolio Relationships</title>
 <style>
 :root{{--bg:#fff;--panel:#f5f7fa;--text:#18202a;--muted:#667085;--line:#ddd;--accent:#155eef}}
-@media(prefers-color-scheme:dark){{:root{{--bg:#101318;--panel:#171b21;--text:#f4f6f8;--muted:#a9b2bd;--line:#303640;--accent:#84adff}}}}
 *{{box-sizing:border-box}}body{{font:15px/1.55 system-ui,sans-serif;max-width:1200px;margin:auto;padding:36px 22px;color:var(--text);background:var(--bg)}}a{{color:var(--accent)}}table{{width:100%;border-collapse:collapse;margin:24px 0}}th,td{{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}}th{{font-size:12px;text-transform:uppercase}}code,pre{{font-family:ui-monospace,SFMono-Regular,monospace}}pre{{overflow:auto;background:var(--panel);padding:16px;border-radius:8px}}.note{{border-left:3px solid var(--accent);padding:10px 14px;background:var(--panel)}}.graph{{margin:24px 0;padding:20px;border:1px solid var(--line);border-radius:10px;overflow:auto;background:var(--bg)}}.mermaid{{min-width:640px;text-align:center}}.render-error{{display:none;color:#b42318;background:#fef3f2;border:1px solid #fecdca;border-radius:8px;padding:12px;margin-top:12px}}details{{margin-top:28px}}summary{{cursor:pointer;font-weight:600;color:var(--accent)}}.lede{{color:var(--muted)}}
 </style></head>
 <body><p><a href="index.html">← Portfolio</a></p><h1>Declared portfolio relationships</h1>

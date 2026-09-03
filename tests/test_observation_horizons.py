@@ -19,13 +19,13 @@ class ObservationHorizonTests(unittest.TestCase):
                 {
                     "name": "September project",
                     "path_with_namespace": "un/unece/uncefact/september",
-                    "web_url": "https://example.test/september",
+                    "web_url": "https://github.com/example/september",
                     "last_activity_at": "2026-09-02T12:00:00Z",
                 },
                 {
                     "name": "August project",
                     "path_with_namespace": "un/unece/uncefact/august",
-                    "web_url": "https://example.test/august",
+                    "web_url": "https://gitlab.example.org/un/august",
                     "last_activity_at": "2026-08-20T12:00:00Z",
                 },
                 {
@@ -76,6 +76,20 @@ class ObservationHorizonTests(unittest.TestCase):
         self.assertEqual(index["un/unece/uncefact/dependency"], {"impacts"})
         self.assertEqual(index["un/unece/uncefact/reviewer"], {"findings"})
 
+    def test_commit_history_urls_follow_repository_host(self):
+        self.assertEqual(
+            module._commit_history_url("https://github.com/example/project"),
+            "https://github.com/example/project/commits",
+        )
+        self.assertEqual(
+            module._commit_history_url("https://gitlab.example.org/group/project"),
+            "https://gitlab.example.org/group/project/-/commits",
+        )
+        self.assertEqual(
+            module._commit_history_url("https://example.test/project"),
+            "https://example.test/project",
+        )
+
     def test_render_links_project_to_supported_current_window_evidence(self):
         data = module.build_horizons(self.snapshot())
         # August remains in the broad horizon but deliberately has no current-window evidence.
@@ -86,8 +100,10 @@ class ObservationHorizonTests(unittest.TestCase):
         self.assertIn('href="changes.html"', html)
         self.assertIn('href="impacts.html"', html)
         self.assertIn('href="findings.html"', html)
-        self.assertIn("No current-window evidence link", html)
-        self.assertIn("does not mean the broader-horizon activity caused", html)
+        self.assertIn("No current-window finding or review.", html)
+        self.assertIn("Inspect recent commits", html)
+        self.assertIn("https://gitlab.example.org/un/august/-/commits", html)
+        self.assertIn("commit-history link is only an", html)
         self.assertIn('href="#month-to-observed-date-projects"', html)
 
     def test_render_escapes_project_content_and_explains_boundary(self):

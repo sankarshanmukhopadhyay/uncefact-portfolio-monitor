@@ -53,6 +53,43 @@ class ObservationHorizonTests(unittest.TestCase):
         self.assertEqual(trailing["project_count"], 2)
         self.assertEqual([p["name"] for p in trailing["projects"]], ["September project", "August project"])
 
+    def test_evidence_index_maps_both_sides_of_review_and_findings(self):
+        changes = {
+            "changed": [{"path_with_namespace": "un/unece/uncefact/september"}],
+            "activity_advanced": [{"path_with_namespace": "un/unece/uncefact/august"}],
+        }
+        impacts = {
+            "review_obligations": [{
+                "review_project": "un/unece/uncefact/september",
+                "changed_project": "un/unece/uncefact/dependency",
+            }]
+        }
+        findings = {
+            "findings": [{
+                "subject_project": "un/unece/uncefact/reviewer",
+                "dependency_project": "un/unece/uncefact/september",
+            }]
+        }
+        index = module.build_evidence_index(changes, impacts, findings)
+        self.assertEqual(index["un/unece/uncefact/september"], {"changes", "impacts", "findings"})
+        self.assertEqual(index["un/unece/uncefact/august"], {"changes"})
+        self.assertEqual(index["un/unece/uncefact/dependency"], {"impacts"})
+        self.assertEqual(index["un/unece/uncefact/reviewer"], {"findings"})
+
+    def test_render_links_project_to_supported_current_window_evidence(self):
+        data = module.build_horizons(self.snapshot())
+        index = {
+            "un/unece/uncefact/september": {"changes", "impacts", "findings"},
+            "un/unece/uncefact/august": {"changes"},
+        }
+        html = module.render_horizons(data, index)
+        self.assertIn('href="changes.html"', html)
+        self.assertIn('href="impacts.html"', html)
+        self.assertIn('href="findings.html"', html)
+        self.assertIn("No current-window evidence link", html)
+        self.assertIn("does not mean the broader-horizon activity caused", html)
+        self.assertIn('href="#month-to-observed-date-projects"', html)
+
     def test_render_escapes_project_content_and_explains_boundary(self):
         snapshot = self.snapshot()
         snapshot["projects"][0]["name"] = "<script>alert(1)</script>"
@@ -62,13 +99,16 @@ class ObservationHorizonTests(unittest.TestCase):
         self.assertIn("not counts of normative changes", html)
         self.assertIn("observation-horizons.json", html)
 
-    def test_homepage_fragment_distinguishes_latest_window(self):
+    def test_homepage_fragment_distinguishes_latest_window_and_links_evidence(self):
         data = module.build_horizons(self.snapshot())
         fragment = module.homepage_fragment(data)
         self.assertIn("latest evidence window remains", fragment.lower())
         self.assertIn("Month to observed date", fragment)
         self.assertIn("Trailing 90 days", fragment)
         self.assertIn("last_activity_at", fragment)
+        self.assertIn("findings.html", fragment)
+        self.assertIn("impacts.html", fragment)
+        self.assertIn("#month-to-observed-date", fragment)
 
     def test_inject_homepage_places_horizons_before_reading_guidance(self):
         html = "<h2>Current observation</h2><p>latest</p><h2>How to read this monitor</h2>"

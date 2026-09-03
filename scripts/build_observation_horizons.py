@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from html import escape
 import json
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -110,7 +111,19 @@ def build_evidence_index(changes: dict, impacts: dict, findings: dict) -> dict[s
     return index
 
 
-def _evidence_links(path: str, evidence_index: dict[str, set[str]]) -> str:
+def _commit_history_url(web_url: str) -> str:
+    base = (web_url or "").rstrip("/")
+    if not base:
+        return ""
+    host = urlparse(base).netloc.lower()
+    if host == "github.com" or host.endswith(".github.com"):
+        return base + "/commits"
+    if "gitlab" in host:
+        return base + "/-/commits"
+    return base
+
+
+def _evidence_links(path: str, web_url: str, evidence_index: dict[str, set[str]]) -> str:
     evidence = evidence_index.get(path, set())
     links = []
     for key, href, label in (
@@ -120,7 +133,13 @@ def _evidence_links(path: str, evidence_index: dict[str, set[str]]) -> str:
     ):
         if key in evidence:
             links.append(f'<a class="evidence-link" href="{href}">{label}</a>')
-    return " ".join(links) or '<span class="empty">No current-window evidence link</span>'
+    if links:
+        return " ".join(links)
+    activity_url = _commit_history_url(web_url)
+    if activity_url:
+        safe_url = escape(activity_url, quote=True)
+        return f'<span class="empty">No current-window finding or review.</span> <a class="activity-link" href="{safe_url}">Inspect recent commits ↗</a>'
+    return '<span class="empty">No current-window finding or review; repository activity link unavailable.</span>'
 
 
 def _project_rows(horizon: dict, evidence_index: dict[str, set[str]]) -> str:
@@ -129,12 +148,13 @@ def _project_rows(horizon: dict, evidence_index: dict[str, set[str]]) -> str:
         name = escape(project.get("name") or "Unnamed")
         path_raw = project.get("path_with_namespace") or "unknown"
         path = escape(path_raw)
-        url = escape(project.get("web_url") or "#", quote=True)
+        web_url_raw = project.get("web_url") or ""
+        url = escape(web_url_raw or "#", quote=True)
         activity = project.get("last_activity_at")
         rendered_activity = escape(_fmt(activity)) if activity else "Unknown"
         rows.append(
             f'<tr><td><a href="{url}">{name}</a><div class="path">{path}</div></td>'
-            f'<td>{rendered_activity}</td><td>{_evidence_links(path_raw, evidence_index)}</td></tr>'
+            f'<td>{rendered_activity}</td><td>{_evidence_links(path_raw, web_url_raw, evidence_index)}</td></tr>'
         )
     return "".join(rows) or '<tr><td colspan="3" class="empty">No project activity observed in this horizon.</td></tr>'
 
@@ -149,16 +169,16 @@ def render_horizons(data: dict, evidence_index: dict[str, set[str]] | None = Non
             f'''<section class="horizon" id="{horizon_id}"><div class="horizon-head"><div><h2>{escape(horizon.get('label') or '')}</h2>
 <p class="lede"><strong>{escape(_fmt(horizon.get('start')))} → {escape(_fmt(horizon.get('end')))}</strong></p></div>
 <a class="metric" href="#{horizon_id}-projects"><strong>{int(horizon.get('project_count', 0))}</strong><span>of {int(horizon.get('portfolio_project_count', 0))} projects ({share:.0f}%)</span><small>View observed projects ↓</small></a></div>
-<div class="table-wrap" id="{horizon_id}-projects"><table><thead><tr><th>Project</th><th>Last recorded activity</th><th>Current-window evidence</th></tr></thead><tbody>{_project_rows(horizon, evidence_index)}</tbody></table></div></section>'''
+<div class="table-wrap" id="{horizon_id}-projects"><table><thead><tr><th>Project</th><th>Last recorded activity</th><th>Evidence / activity trace</th></tr></thead><tbody>{_project_rows(horizon, evidence_index)}</tbody></table></div></section>'''
         )
     return f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>UN/CEFACT Observation Horizons</title><style>
 :root{{--bg:#f7f8fa;--panel:#fff;--text:#18202a;--muted:#667085;--line:#dfe3e8;--accent:#155eef}}
-*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}}main{{max-width:1180px;margin:auto;padding:36px 22px 72px}}a{{color:var(--accent);text-decoration:none}}a:hover{{text-decoration:underline}}h1{{margin-bottom:8px}}h2{{margin:0 0 4px}}.lede,.empty{{color:var(--muted)}}.nav{{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}}.nav a,.evidence-link{{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 9px}}.note{{border-left:3px solid var(--accent);padding:12px 14px;background:var(--panel);margin:20px 0 28px}}.horizon{{margin:28px 0 40px;scroll-margin-top:16px}}.horizon-head{{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}}.metric{{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:210px;color:var(--text)}}.metric:hover{{border-color:var(--accent);text-decoration:none}}.metric strong,.metric span,.metric small{{display:block}}.metric strong{{font-size:28px}}.metric span,.metric small{{color:var(--muted)}}.table-wrap{{overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:14px;scroll-margin-top:16px}}table{{width:100%;border-collapse:collapse;min-width:820px}}th,td{{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}}th{{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}}tr:last-child td{{border-bottom:0}}.path{{font-size:12px;color:var(--muted);margin-top:3px}}.evidence-link{{margin:0 5px 5px 0;padding:4px 7px;font-size:13px}}
+*{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,Segoe UI,sans-serif}}main{{max-width:1180px;margin:auto;padding:36px 22px 72px}}a{{color:var(--accent);text-decoration:none}}a:hover{{text-decoration:underline}}h1{{margin-bottom:8px}}h2{{margin:0 0 4px}}.lede,.empty{{color:var(--muted)}}.nav{{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}}.nav a,.evidence-link,.activity-link{{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 9px}}.note{{border-left:3px solid var(--accent);padding:12px 14px;background:var(--panel);margin:20px 0 28px}}.horizon{{margin:28px 0 40px;scroll-margin-top:16px}}.horizon-head{{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}}.metric{{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;min-width:210px;color:var(--text)}}.metric:hover{{border-color:var(--accent);text-decoration:none}}.metric strong,.metric span,.metric small{{display:block}}.metric strong{{font-size:28px}}.metric span,.metric small{{color:var(--muted)}}.table-wrap{{overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:14px;scroll-margin-top:16px}}table{{width:100%;border-collapse:collapse;min-width:820px}}th,td{{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}}th{{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}}tr:last-child td{{border-bottom:0}}.path{{font-size:12px;color:var(--muted);margin-top:3px}}.evidence-link,.activity-link{{margin:0 5px 5px 0;padding:4px 7px;font-size:13px}}.activity-link{{margin-left:6px}}
 </style></head><body><main>
 <nav class="nav" aria-label="Evidence navigation"><a href="index.html">Portfolio</a><a href="changes.html">Changes</a><a href="impacts.html">Impact review</a><a href="findings.html">Findings</a><a href="observation-horizons.json">Raw horizon JSON</a></nav>
 <h1>Observation horizons</h1><p class="lede">Broader activity context for a slow-moving standards portfolio, anchored to the same observation timestamp as the monitor.</p>
-<div class="note"><strong>Interpretation boundary:</strong> {escape(data.get('interpretation') or '')} Evidence links in project rows refer to the <strong>current snapshot-to-snapshot window</strong>; their presence does not mean the broader-horizon activity caused that finding or review obligation.</div>{''.join(sections)}
+<div class="note"><strong>Interpretation boundary:</strong> {escape(data.get('interpretation') or '')} Current-window links point to findings, review obligations, or change evidence from the latest snapshot comparison. Where none exists, the commit-history link is only an <strong>activity trace</strong>; it does not mean a commit was normative, material, or causally related to a finding.</div>{''.join(sections)}
 </main></body></html>'''
 
 
@@ -210,7 +230,7 @@ def main() -> int:
     )
     index_html = args.index.read_text(encoding="utf-8")
     args.index.write_text(inject_homepage(index_html, homepage_fragment(data)), encoding="utf-8")
-    print("built month-to-observed-date and trailing-90-day observation horizons with evidence links")
+    print("built month-to-observed-date and trailing-90-day observation horizons with evidence and activity links")
     return 0
 
 

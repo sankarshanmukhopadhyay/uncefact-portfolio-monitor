@@ -78,6 +78,7 @@ class ObservationHorizonTests(unittest.TestCase):
 
     def test_render_links_project_to_supported_current_window_evidence(self):
         data = module.build_horizons(self.snapshot())
+        # August remains in the broad horizon but deliberately has no current-window evidence.
         index = {
             "un/unece/uncefact/september": {"changes", "impacts", "findings"},
         }

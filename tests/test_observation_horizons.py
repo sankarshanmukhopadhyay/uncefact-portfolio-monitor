@@ -80,7 +80,6 @@ class ObservationHorizonTests(unittest.TestCase):
         data = module.build_horizons(self.snapshot())
         index = {
             "un/unece/uncefact/september": {"changes", "impacts", "findings"},
-            "un/unece/uncefact/august": {"changes"},
         }
         html = module.render_horizons(data, index)
         self.assertIn('href="changes.html"', html)

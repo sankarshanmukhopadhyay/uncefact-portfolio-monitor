@@ -88,3 +88,9 @@ Future evidence providers may add role-aware repository checks, semantic/schema 
 - **v1.0.0 — Alaknanda** — stable evidence contract and operational release baseline.
 
 Release codenames are randomly selected from the configured pool derived from Wikipedia's `Category:Tributaries of the Ganges` and are permanently recorded in release manifests.
+
+## License
+
+Repository-authored code, documentation, configuration, and generated monitor outputs are licensed under the [Apache License 2.0](LICENSE).
+
+Material observed, quoted, linked, or retrieved from UN/CEFACT repositories and other external sources is **not relicensed by this repository**. Such material remains subject to the terms, notices, and authority of its original source.

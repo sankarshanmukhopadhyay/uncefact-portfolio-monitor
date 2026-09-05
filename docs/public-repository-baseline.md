@@ -5,7 +5,7 @@ This record captures controls reviewed under issue #35. It is repository assuran
 | Control | State | Evidence | Residual risk |
 |---|---|---|---|
 | Purpose/adoption/authority boundary | PASS | `README.md`, `docs/`, config/release surfaces | Upstream UN/CEFACT repositories remain authoritative. |
-| Licensing | EVIDENCE REQUIRED | no top-level license or explicit repository licensing statement located in reviewed source | License selection is a human authority decision; tracked separately. |
+| Licensing | PASS | top-level `LICENSE` (Apache-2.0) and README licensing boundary | Externally sourced UN/CEFACT and other third-party material is explicitly excluded from relicensing and remains subject to source terms. |
 | Security reporting | PASS | `SECURITY.md` | Hosted private-reporting enablement remains platform evidence. |
 | Contribution/community/support | PASS | `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SUPPORT.md`, issue/PR templates | None identified. |
 | Dependency updates | PASS | `.github/dependabot.yml` | Hosted Dependabot enablement remains platform evidence. |
@@ -15,4 +15,4 @@ This record captures controls reviewed under issue #35. It is repository assuran
 
 ## Completion boundary
 
-Repository-owned baseline gaps are closed by the remediation PR. Licensing and default-branch protection remain explicit bounded residuals because they require human/platform authority rather than code-only inference.
+Repository-owned baseline and licensing gaps are closed through governed PRs. Default-branch protection remains an explicit bounded residual because it requires GitHub repository-administration authority rather than code-only inference.
